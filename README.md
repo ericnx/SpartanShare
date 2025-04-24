@@ -19,6 +19,5 @@ if not, then install next.js (react framework): `npx create-next-app@latest`
 [mysql download](https://dev.mysql.com/downloads/mysql/8.0.html)\
 `mysql -u root`\
 `mysqladmin -u root password [newpassword]`
-\
 
 `mysql -u root -p`

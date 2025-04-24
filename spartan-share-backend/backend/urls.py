@@ -15,12 +15,21 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
 from django.shortcuts import redirect
 from .views import LoginView
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
+from .views import UserViewSet, ProjectViewSet, ProjectApplicationViewSet
+
+# routes the user to different view sets depending on the URL/endpoint
+router = DefaultRouter()
+router.register(r'users', UserViewSet)
+router.register(r'projects', ProjectViewSet)
+router.register(r'applications', ProjectApplicationViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('login/', LoginView.as_view(), name='login'),
     path('', lambda request: redirect('login')),
+    path('api/', include(router.urls)),
 ]
