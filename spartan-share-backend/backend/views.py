@@ -3,6 +3,9 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
+from rest_framework import viewsets
+from .models import User, Project, ProjectApplication
+from .serializers import UserSerializer, ProjectSerializer, ProjectApplicationSerializer
 
 class LoginView(APIView):
     # handles login requests and returns a JWT token
@@ -21,3 +24,18 @@ class LoginView(APIView):
             })
         else:
             return Response({"detail": "Invalid credentials"}, status=400)
+        
+
+# creates REST API endpoints
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+class ProjectViewSet(viewsets.ModelViewSet):
+    queryset = Project.objects.all()
+    serializer_class = ProjectSerializer
+
+class ProjectApplicationViewSet(viewsets.ModelViewSet):
+    queryset = ProjectApplication.objects.all()
+    serializer_class = ProjectApplicationSerializer
