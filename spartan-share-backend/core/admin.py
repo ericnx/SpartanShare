@@ -3,6 +3,7 @@ from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models import User, Project, Application
 
 class UserAdmin(BaseUserAdmin):
+  ordering = ['email']
   fieldsets = BaseUserAdmin.fieldsets + (
     (None, {'fields': ('display_name', 'biography', 'major', 'level')}),
   )

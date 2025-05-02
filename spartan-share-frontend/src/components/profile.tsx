@@ -116,7 +116,7 @@ export default function Profile() {
           onChange={(e) => setLevel(e.target.value)}
           className="w-full border border-gray-400 rounded px-3 py-2">
           <option value="" disabled hidden>Select Level</option>
-          <option value="Undergraduate">Undergraduate</option>
+          <option value="Undergrad">Undergraduate</option>
           <option value="Graduate">Graduate</option>
         </select>
       </div>

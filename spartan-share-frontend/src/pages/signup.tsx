@@ -8,17 +8,52 @@ export default function Signup() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
       alert("Passwords do not match");
       return;
     }
-    console.log("Name:", name);
-    console.log("Email:", email);
-    console.log("Password:", password);
+
+    if (!email || !password || !name) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/register/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept":       "application/json",
+        },
+        body: JSON.stringify({
+          // username: email,
+          display_name: name,
+          email: email,
+          password: password,
+          major: "",
+          level: "",
+        }),
+      });
+
+      const payload = await res.json();  // read raw response
+
+      if (res.ok) {
+        alert("Account created!");
+        window.location.href = "/login";
+      } else {
+        console.error("Signup error:", payload);
+        alert("Signup failed: " + JSON.stringify(payload));
+      }
+    } catch (err) {
+      console.error("Signup error:", err);
+      alert("An error occurred during signup.");
+    }
   };
+
+
 
   return (
     <div className="flex h-screen bg-sky-200">
