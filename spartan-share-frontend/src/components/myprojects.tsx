@@ -1,27 +1,62 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from"next/router";
 // import NewProjectModal from "./newprojectmodal"
 
-const Projects = [
-  {
-    id: 1,
-    title: "Example Project 1",
-    majors: ["Computer Science", "Software Engr"],
-    skills: ["Full stack"],
-    duration: "6 months",
-  },
+// const Projects = [
+//   {
+//     id: 1,
+//     title: "Example Project 1",
+//     majors: ["Computer Science", "Software Engr"],
+//     skills: ["Full stack"],
+//     duration: "6 months",
+//   },
 
-  {
-    id: 2,
-    title: "Example Project 2",
-    majors: ["Mechanical Engr", "Software Engr"],
-    skills: ["C++", "C"],
-    duration: "1 Year",
-  },
-];
+//   {
+//     id: 2,
+//     title: "Example Project 2",
+//     majors: ["Mechanical Engr", "Software Engr"],
+//     skills: ["C++", "C"],
+//     duration: "1 Year",
+//   },
+// ];
+
+type Project = {
+  id: number;
+  title: string;
+  description: string;
+  creator: { display_name: string };
+  start_date: string;
+  end_date: string;
+  skills: string[];
+  majors: string[];
+  graduate_levels: string[];
+}
 
 export default function MyProjects() {
   const [showModal, setShowModal] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([]);
   const modalRef = useRef(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = localStorage.getItem("access");
+
+    if (!token) {
+      alert("Please log in first.");
+      router.push("/login");
+      return;
+    }
+
+    // Fetch the projects this user created
+    fetch("http://127.0.0.1:8000/api/projects/", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => setProjects(data))
+      .catch((err) => console.error("Error fetching projects:", err));
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -38,6 +73,8 @@ export default function MyProjects() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showModal]);
+
+
   return (
     // <div className="max-w-6xl mx-auto">
     <div>
@@ -57,7 +94,7 @@ export default function MyProjects() {
       <h3 className="text-2xl font-bold mb-4">My Posted Projects:</h3>
 
       <div className="flex flex-wrap gap-10">
-        {Projects.map((project) => (
+        {projects.map((project) => (
           <div key={project.id}
             className="w-64 border border-black shadow-sm">
             <div className="bg-sky-200 px-2 py-1 border-b border-black text-center font-bold">
@@ -74,9 +111,14 @@ export default function MyProjects() {
                 <span className="whitespace-pre-wrap">{project.skills.join(", ")}</span>
               </div>
               <div className="flex">
+                <span className="font-semibold w-20 shrink-0">Dates:</span>
+                <span>{project.start_date} → {project.end_date}</span>
+              </div>
+              {/* temporarily changed this, will find a way to make duration = end - start later */}
+              {/* <div className="flex">
                 <span className="font-semibold w-20 shrink-0">Duration:</span>
                 <span className="whitespace-pre-wrap">{project.duration}</span>
-              </div>
+              </div> */}
             </div>
 
             <div className="flex justify-between px-3 pb-3">

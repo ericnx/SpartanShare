@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useRouter } from 'next/router';
 import Link from "next/link";
 import Profile from "../components/profile";
 import MyProjects from "../components/myprojects";
@@ -8,6 +9,7 @@ import Applications from "../components/applications";
 
 export default function Home() {
   const [selected, setSelected] = useState("projects");
+  const router = useRouter();
 
   const renderContent = () => {
     switch (selected) {
@@ -24,6 +26,12 @@ export default function Home() {
       default:
         return <BrowseProjects></BrowseProjects>;
     }
+  };
+
+  const logout = () => {
+    localStorage.removeItem('access');
+    localStorage.removeItem('refresh');
+    router.push('/login');
   };
 
   return (
@@ -65,12 +73,13 @@ export default function Home() {
         </div>
 
         <div>
-          <Link
+          {/* <Link
             href="/login"
             className="text-blue-600 hover:underline flex items-center gap-1"
           >
             <span className="text-xl">◀Log Out</span>
-          </Link>
+          </Link> */}
+          <button onClick={logout} className="text-blue-600 hover:underline flex items-center gap-1">◀Log Out</button>
         </div>
       </aside>
 

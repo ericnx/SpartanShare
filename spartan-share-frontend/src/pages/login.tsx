@@ -8,15 +8,50 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Email:", email);
-    console.log("Password:", password);
+  
+    const res = await fetch("http://127.0.0.1:8000/api/token/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+  
+    const data = await res.json();
+  
+    if (res.ok) {
+      localStorage.setItem("access", data.access);
+      localStorage.setItem("refresh", data.refresh);
+      alert("Login successful!");
+      // Optionally navigate to dashboard or home
+      router.push("/home");
+    } else {
+      alert("Login failed");
+      console.error("Login error:", data);
+    }
   };
 
   const handleSignupRedirect = () => {
     router.push("/signup");
   };
+
+  // const login = async () => {
+  //   const res = await fetch('http://127.0.0.1:8000/api/token/', {
+  //     method: 'POST',
+  //     headers: { 'Content-Type': 'application/json' },
+  //     body: JSON.stringify({ email, password }),
+  //   });
+
+  //   const data = await res.json();
+  //   if (res.ok) {
+  //     localStorage.setItem('access', data.access);
+  //     localStorage.setItem('refresh', data.refresh);
+  //     alert('Login successful!');
+  //   } else {
+  //     alert('Login failed');
+  //     console.error(data);
+  //   }
+  // };
 
   return (
     <div className="flex h-screen bg-sky-200">
