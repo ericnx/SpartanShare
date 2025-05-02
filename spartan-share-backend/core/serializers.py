@@ -5,6 +5,9 @@ class UserSerializer(serializers.ModelSerializer):
   class Meta:
     model = User
     fields = '__all__'
+    extra_kwargs = {
+            'email': {'read_only': True},
+        }
 
 class ProjectSerializer(serializers.ModelSerializer):
   creator = UserSerializer(read_only=True)
