@@ -35,7 +35,9 @@ type Project = {
 export default function MyProjects() {
   const [showModal, setShowModal] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
-  const modalRef = useRef(null);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const createModalRef = useRef(null);
+  const viewModalRef = useRef(null);
   const router = useRouter();
 
   const [title, setTitle] = useState("");
@@ -143,19 +145,17 @@ export default function MyProjects() {
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
+      if (createModalRef.current && !createModalRef.current.contains(e.target as Node)) {
         setShowModal(false);
+      }
+      if (viewModalRef.current && !viewModalRef.current.contains(e.target as Node)) {
+        setSelectedProject(null);
       }
     };
 
-    if (showModal) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showModal]);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showModal, selectedProject]);
 
 
   return (
@@ -179,7 +179,8 @@ export default function MyProjects() {
       <div className="flex flex-wrap gap-10">
         {projects.map((project) => (
           <div key={project.id}
-            className="w-64 border border-black shadow-sm">
+          onClick={() => setSelectedProject(project)}
+            className="w-64 border border-black shadow-sm cursor-pointer hover:shadow-lg">
             <div className="bg-sky-200 px-2 py-1 border-b border-black text-center font-bold">
               {project.title}
             </div>
@@ -215,7 +216,7 @@ export default function MyProjects() {
       {/* {showModal && <NewProjectModal onClose={() => setShowModal(false)} />} */}
       {showModal && (
         <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50">
-        <div ref={modalRef} className="bg-gray-100 border-2 border-black w-[600px] rounded-md shadow-lg">
+        <div ref={createModalRef} className="bg-gray-100 border-2 border-black w-[600px] rounded-md shadow-lg">
           <h2 className="text-center text-lg font-bold bg-sky-200 py-0.5 border-b-2 border-black rounded">New Project</h2>
   
           <form className="space-y-5 p-6" onSubmit={handleSubmit}>
@@ -292,10 +293,54 @@ export default function MyProjects() {
                   className="px-8 border border-black bg-gray-200 hover:bg-gray-300 rounded">Post Project
                 </button>
             </div>
-          </form>
+            </form>
+          </div>
         </div>
-      </div>
       )}
+
+      {selectedProject && (
+        <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center z-50">
+          <div ref={viewModalRef} className="bg-gray-100 border-2 border-black w-[600px] rounded-md shadow-lg">
+            <div className="text-center text-lg font-bold bg-sky-200 py-0.5 border-b-2 border-black rounded">{selectedProject.title}</div>
+
+            <div className="space-y-5 p-6">
+              <div className="flex">
+                <span className="font-semibold w-32 shrink-0">Description:</span>
+                <span className="whitespace-pre-wrap">{selectedProject.description}</span>
+              </div>
+
+              <div className="flex">
+                <span className="font-semibold w-32 shrink-0">Dates:</span>
+                <span>{selectedProject.start_date} - {selectedProject.end_date}</span>
+              </div>
+
+              <div className="flex">
+                <span className="font-semibold w-32 shrink-0">Skills Wanted:</span>
+                <span className="whitespace-pre-wrap">{selectedProject.skills.join(", ")}</span>
+              </div>
+
+              <div className="flex">
+                <span className="font-semibold w-32 shrink-0">Graduate Level:</span>
+                <span className="whitespace-pre-wrap">{selectedProject.graduate_levels.join(", ")}</span>
+              </div>
+
+              <div className="flex">
+                <span className="font-semibold w-32 shrink-0">Majors Wanted:</span>
+                <span className="whitespace-pre-wrap">{selectedProject.majors.join(", ")}</span>
+              </div>
+            </div>
+
+            <div className="flex justify-center gap-24 mt-6 pb-6">
+              <button type="button"
+                onClick={() => setSelectedProject(null)}
+                className="px-8 py-1 font-semibold border border-black rounded bg-gray-200 hover:bg-gray-300">
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
