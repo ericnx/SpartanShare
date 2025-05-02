@@ -33,7 +33,7 @@ export default function Home() {
         <div>
 
           <div className="px-6 py-8">
-            <img src="/logo.jpg" alt="Logo" className="mx-auto w-40"></img>
+            <img src="/logo2.png" alt="Logo" className="mx-auto w-40"></img>
           </div>
 
           <nav className="flex flex-col items-center gap-5 px-4">

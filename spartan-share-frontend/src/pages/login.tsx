@@ -22,7 +22,7 @@ export default function Login() {
     <div className="flex h-screen bg-sky-200">
       {/* Please input our logo over here */}
       <div className="w-2/3 flex items-center justify-center">
-        <img src="/logo.jpg" alt="Logo" className="w-500 h-500" />
+        <img src="/logo1.png" alt="Logo" />
       </div>
 
       <div className="w-px h-full bg-gray-600"></div>

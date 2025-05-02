@@ -23,7 +23,7 @@ export default function Signup() {
   return (
     <div className="flex h-screen bg-sky-200">
       <div className="w-2/3 flex items-center justify-center">
-        <img src="/logo.jpg" alt="Logo" className="w-500 h-500" />
+        <img src="/logo1.png" alt="Logo" />
       </div>
       <div className="w-px h-full bg-gray-600"></div>
       <div className="w-1/5 p-8 ml-auto mr-auto my-auto">

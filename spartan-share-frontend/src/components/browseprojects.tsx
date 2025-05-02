@@ -1,50 +1,70 @@
 import React, { useState, useEffect, useRef } from "react";
 import { HeartIcon } from "@heroicons/react/24/solid";
 
-const dummyProjects = [
-  {
-    id: 1,
-    title: "Example Project 1",
-    majors: ["Computer Science", "Software Engr"],
-    skills: ["Full stack"],
-    duration: "6 months",
-    favorited: true,
-  },
+// const dummyProjects = [
+//   {
+//     id: 1,
+//     title: "Example Project 1",
+//     majors: ["Computer Science", "Software Engr"],
+//     skills: ["Full stack"],
+//     duration: "6 months",
+//     favorited: true,
+//   },
 
-  {
-    id: 2,
-    title: "Example Project 2",
-    majors: ["Mechanical Engr", "Software Engr"],
-    skills: ["C++", "C"],
-    duration: "1 Year",
-    favorited: true,
-  },
+//   {
+//     id: 2,
+//     title: "Example Project 2",
+//     majors: ["Mechanical Engr", "Software Engr"],
+//     skills: ["C++", "C"],
+//     duration: "1 Year",
+//     favorited: true,
+//   },
 
-  {
-    id: 3,
-    title: "Example Project 3",
-    majors: ["Mechanical Engr", "Software Engr"],
-    skills: ["C++", "C"],
-    duration: "1 Year",
-    favorited: false,
-  },
+//   {
+//     id: 3,
+//     title: "Example Project 3",
+//     majors: ["Mechanical Engr", "Software Engr"],
+//     skills: ["C++", "C"],
+//     duration: "1 Year",
+//     favorited: false,
+//   },
 
-  {
-    id: 4,
-    title: "Example Project 4",
-    majors: ["Mechanical Engr", "Software Engr"],
-    skills: ["C++", "C"],
-    duration: "1 Year",
-    favorited: false,
-  },
-];
+//   {
+//     id: 4,
+//     title: "Example Project 4",
+//     majors: ["Mechanical Engr", "Software Engr"],
+//     skills: ["C++", "C"],
+//     duration: "1 Year",
+//     favorited: false,
+//   },
+// ];
+
+type Project = {
+  id: number;
+  title: string;
+  description: string;
+  creator: { display_name: string };
+  start_date: string;
+  end_date: string;
+  skills: string[];
+  majors: string[];
+  graduate_levels: string[];
+}
 
 export default function BrowseProjects() {
   const [search, setSearch] = useState("");
   const [selectedMajor, setSelectedMajor] = useState("");
   const [selectedDuration, setSelectedDuration] = useState("");
-  const [selectedProject, setSelectedProject] = useState(null);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [projects, setProjects] = useState<Project[]>([]);
   const modalRef = useRef(null);
+
+  useEffect(() => {
+    fetch("http://127.0.0.1:8000/api/projects/")
+      .then((res) => res.json())
+      .then((data) => setProjects(data))
+      .catch((err) => console.error("Failed to fetch projects", err));
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -100,7 +120,7 @@ export default function BrowseProjects() {
 
       {/* <div className="relative"> */}
         <div className="flex flex-wrap justify-center gap-10">
-          {dummyProjects.map((project) => (
+          {projects.map((project) => (
             <div key={project.id}
               onClick={() => setSelectedProject(project)}
               className="w-64 border border-black shadow-sm cursor-pointer hover:shadow-lg">
@@ -118,14 +138,17 @@ export default function BrowseProjects() {
                   <span className="whitespace-pre-wrap">{project.skills.join(", ")}</span>
                 </div>
                 <div className="flex">
-                  <span className="font-semibold w-20 shrink-0">Duration:</span>
-                  <span className="whitespace-pre-wrap">{project.duration}</span>
+                  {/* <span className="font-semibold w-20 shrink-0">Duration:</span>
+                  <span className="whitespace-pre-wrap">{project.duration}</span> */}
+                  {/* temporarily changed this, will find a way to make duration = end - start later */}
+                  <span className="font-semibold w-20 shrink-0">Dates:</span>
+                  <span>{project.start_date} → {project.end_date}</span>
                 </div>
               </div>
 
-              <div className="flex justify-end px-3 pb-3">
+              {/* <div className="flex justify-end px-3 pb-3">
                 <HeartIcon className={`h-5 w-5 cursor-pointer ${project.favorited ? "text-red-500" : "text-gray-400"}`}></HeartIcon>
-              </div>
+              </div> */}
             </div>
 
           ))}
@@ -140,20 +163,17 @@ export default function BrowseProjects() {
               <div className="space-y-5 p-6">
                 <div className="flex">
                   <span className="font-semibold w-32 shrink-0">Project Initiator:</span>{" "}
-                  <span className="font-semibold underline cursor-pointer whitespace-pre-wrap">Bob Ross</span>
+                  <span className="font-semibold underline cursor-pointer whitespace-pre-wrap">{selectedProject.creator.display_name}</span>
                 </div>
 
                 <div className="flex">
                   <span className="font-semibold w-32 shrink-0">Description:</span>
-                  <span className="whitespace-pre-wrap">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                    Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                    Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-                    Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</span>
+                  <span className="whitespace-pre-wrap">{selectedProject.description}</span>
                 </div>
 
                 <div className="flex">
                   <span className="font-semibold w-32 shrink-0">Dates:</span>
-                  <span className="whitespace-pre-wrap">5/10/2025 - 8/20/2025</span>
+                  <span className="whitespace-pre-wrap">{selectedProject.start_date} - {selectedProject.end_date}</span>
                 </div>
 
                 <div className="flex">
@@ -163,7 +183,7 @@ export default function BrowseProjects() {
 
                 <div className="flex">
                   <span className="font-semibold w-32 shrink-0">Graduate Level:</span>
-                  <span className="whitespace-pre-wrap">Undergrad</span>
+                  <span className="whitespace-pre-wrap">{selectedProject.graduate_levels.join(", ")}</span>
                 </div>
 
                 <div className="flex">
