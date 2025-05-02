@@ -23,9 +23,10 @@ class User(AbstractUser):
   
 class Project(models.Model):
   title = models.CharField(max_length=255)
-  uid = models.CharField(max_length = 100, unique=True)
+  # uid = models.CharField(max_length = 100, unique=True)
   description = models.TextField()
-  creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_projects')
+  # creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_projects')
+  creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='projects')
   start_date = models.DateField()
   end_date = models.DateField()
   skills = models.JSONField(default=list)

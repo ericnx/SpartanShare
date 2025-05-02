@@ -38,6 +38,70 @@ export default function MyProjects() {
   const modalRef = useRef(null);
   const router = useRouter();
 
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [skills, setSkills] = useState("");
+  const [majors, setMajors] = useState("");
+  const [graduateLevel, setGraduateLevel] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const token = localStorage.getItem("access");
+
+    if (!token) {
+      alert("You must be logged in to create a project.");
+      return;
+    }
+
+    const body = {
+      title,
+      description,
+      start_date: startDate,
+      end_date: endDate,
+      skills: skills.split(",").map(s => s.trim()),
+      majors: majors.split(",").map(m => m.trim()),
+      graduate_levels_wanted: [graduateLevel],
+    };
+
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/projects/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (res.ok) {
+        const newProject = await res.json();
+        setProjects(prev => [...prev, newProject]);
+        setShowModal(false);
+        resetForm();
+      } else {
+        const err = await res.json();
+        console.error("Failed to create project:", err);
+        alert("Failed to create project.");
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      alert("Something went wrong.");
+    }
+  };
+
+  const resetForm = () => {
+    setTitle("");
+    setDescription("");
+    setStartDate("");
+    setEndDate("");
+    setSkills("");
+    setMajors("");
+    setGraduateLevel("");
+  };
+
+
   useEffect(() => {
     const token = localStorage.getItem("access");
 
@@ -47,15 +111,34 @@ export default function MyProjects() {
       return;
     }
 
-    // Fetch the projects this user created
+    const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+    const isExpired = tokenPayload.exp * 1000 < Date.now();
+    if (isExpired) {
+      alert("Session expired. Please log in again.");
+      localStorage.removeItem("access");
+      localStorage.removeItem("refresh");
+      router.push("/login");
+    }
+
     fetch("http://127.0.0.1:8000/api/projects/", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     })
       .then((res) => res.json())
-      .then((data) => setProjects(data))
-      .catch((err) => console.error("Error fetching projects:", err));
+      .then((data) => {
+        console.log("Projects fetch response:", data);
+        if (Array.isArray(data)) {
+          setProjects(data);
+        } else {
+          console.error("Expected array but got:", data);
+          setProjects([]);  // fallback to empty
+        }
+      })
+      .catch((err) => {
+        console.error("Error fetching projects:", err);
+        setProjects([]);
+      });
   }, []);
 
   useEffect(() => {
@@ -135,41 +218,50 @@ export default function MyProjects() {
         <div ref={modalRef} className="bg-gray-100 border-2 border-black w-[600px] rounded-md shadow-lg">
           <h2 className="text-center text-lg font-bold bg-sky-200 py-0.5 border-b-2 border-black rounded">New Project</h2>
   
-          <form className="space-y-5 p-6">
+          <form className="space-y-5 p-6" onSubmit={handleSubmit}>
             <div className="flex justify-between">
               <label className="w-1/4 font-semibold">Enter Title:</label>
-              <input type="text" placeholder="Title" className="w-3/4 border border-black rounded px-2 py-1"></input>
+              <input type="text" placeholder="Title" 
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-3/4 border border-black rounded px-2 py-1"></input>
             </div>
   
             <div className="flex justify-between">
               <label className="w-1/4 font-semibold">Enter Description:</label>
-              <textarea placeholder="Description" className="w-3/4 border border-black rounded px-2 py-1 h-24"></textarea>
+              <textarea placeholder="Description"
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-3/4 border border-black rounded px-2 py-1 h-24"></textarea>
             </div>
   
             <div className="flex justify-between">
               <label className="w-1/3 font-semibold">Start and End Date:</label>
               <div className="w-2/3 flex gap-2">
-                <input type="date" className="border border-black rounded px-2"></input>
-                <input type="date" className="border border-black rounded px-2"></input>
+                <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="border border-black rounded px-2"></input>
+                <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)}  className="border border-black rounded px-2"></input>
               </div>
             </div>
   
             <div className="flex justify-between">
               <label className="w-1/4 font-semibold">Skills Wanted:</label>
-              <input type="text" placeholder="Skills" className="w-3/4 border border-black rounded px-2 py-1 h-12"></input>
+              <input type="text" placeholder="Skills"
+                value={skills}
+                onChange={(e) => setSkills(e.target.value)}
+                className="w-3/4 border border-black rounded px-2 py-1 h-12"></input>
             </div>
   
             <div className="flex justify-between">
               <label className="w-1/4 font-semibold">Graduate Level:</label>
-              <select className="w-3/4 border border-black rounded px-2 py-1">
+              <select value={graduateLevel} onChange={(e) => setGraduateLevel(e.target.value)}
+                className="w-3/4 border border-black rounded px-2 py-1">
                 <option value="" disabled hidden>Select Level</option>
-                <option>Undergrad/Grad</option>
-                <option>Undergrad</option>
-                <option>Graduate</option>
+                <option value="Undergrad/Grad">Undergrad/Grad</option>
+                <option value="Undergrad">Undergrad</option>
+                <option value="Graduate">Graduate</option>
               </select>
             </div>
   
-            <div className="flex justify-between">
+            {/* <div className="flex justify-between">
               <label className="w-1/4 font-semibold">Majors Wanted:</label>
               <select className="w-3/4  border border-black rounded px-2 py-1">
                 <option value="" disabled hidden>Select Majors</option>
@@ -178,18 +270,27 @@ export default function MyProjects() {
                 <option>Computer Engr</option>
                 <option>Mechanical Engr</option>
               </select>
-            </div>
-  
-            <div className="flex justify-center gap-24 mt-6">
-              <button 
-                type="button"
-                onClick={() => setShowModal(false)}
-                className="px-8 py-0.5 border border-black bg-gray-200 hover:bg-gray-300 rounded">Cancel
-              </button>
-              <button 
-                type="submit" 
-                className="px-8 border border-black bg-gray-200 hover:bg-gray-300 rounded">Post Project
-              </button>
+            </div> */}
+
+              <div className="flex justify-between">
+                <label className="w-1/4 font-semibold">Majors Wanted:</label>
+                <input type="text" placeholder="Comma-separated"
+                  value={majors}
+                  onChange={(e) => setMajors(e.target.value)}
+                  className="w-3/4 border border-black rounded px-2 py-1">
+                </input>
+              </div>
+
+              <div className="flex justify-center gap-24 mt-6">
+                <button
+                  type="button"
+                  onClick={() => setShowModal(false)}
+                  className="px-8 py-0.5 border border-black bg-gray-200 hover:bg-gray-300 rounded">Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-8 border border-black bg-gray-200 hover:bg-gray-300 rounded">Post Project
+                </button>
             </div>
           </form>
         </div>
