@@ -95,6 +95,23 @@ def list_saved_projects(request):
     serializer = ProjectSerializer(projects, many=True, context={'request': request})
     return Response(serializer.data)
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def apply_to_project(request, project_id):
+    user = request.user
+    try:
+        project = Project.objects.get(pk=project_id)
+
+        # Check if already applied
+        if Application.objects.filter(user=user, project=project).exists():
+            return Response({"detail": "Already applied"}, status=status.HTTP_400_BAD_REQUEST)
+
+        Application.objects.create(user=user, project=project)
+        return Response({"detail": "Applied successfully"}, status=status.HTTP_201_CREATED)
+
+    except Project.DoesNotExist:
+        return Response({"detail": "Project not found"}, status=status.HTTP_404_NOT_FOUND)
+
 # @api_view(["POST"])
 # @permission_classes([IsAuthenticated])
 # def toggle_save_project(request, project_id):

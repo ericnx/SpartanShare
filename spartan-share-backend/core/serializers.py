@@ -25,6 +25,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 class ProjectSerializer(serializers.ModelSerializer):
     creator = UserSerializer(read_only=True)
     favorited = serializers.SerializerMethodField()
+    has_applied = serializers.SerializerMethodField()
 
     class Meta:
         model = Project
@@ -34,6 +35,9 @@ class ProjectSerializer(serializers.ModelSerializer):
     def get_favorited(self, obj):
         request = self.context.get("request")
         return request and request.user.is_authenticated and obj.saved_by.filter(id=request.user.id).exists()
+    def get_has_applied(self, obj):
+        request = self.context.get('request')
+        return request and request.user.is_authenticated and obj.applications.filter(user=request.user).exists()
 
 
 class ApplicationSerializer(serializers.ModelSerializer):
