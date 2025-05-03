@@ -1,17 +1,37 @@
 import React from "react";
 import { useState } from "react";
 import { EnvelopeIcon, LockClosedIcon } from "@heroicons/react/24/outline";
-import { useRouter } from"next/router";
+import { useRouter } from "next/router";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Email:", email);
-    console.log("Password:", password);
+    try {
+      const res = await fetch("http://localhost:8000/login/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+      console.log(data)
+
+      if (res.ok) {
+        localStorage.setItem("user", JSON.stringify(data));
+        alert("Login successful");
+        router.push("/home");
+      } else {
+        alert("Login failed: " + JSON.stringify(data));
+      }
+    } catch (error) {
+      console.log("Login error:", error);
+    }
   };
 
   const handleSignupRedirect = () => {
@@ -32,12 +52,15 @@ export default function Login() {
 
         <form onSubmit={handleSubmit}>
           <div>
-            <label className="block text-base font-medium mb-1">SJSU Email address</label>
+            <label className="block text-base font-medium mb-1">
+              SJSU Email address
+            </label>
             <div className="relative mb-3">
               <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <EnvelopeIcon className="h-5 w-5 text-blue-700"></EnvelopeIcon>
               </span>
-              <input type="email"
+              <input
+                type="email"
                 placeholder="email@sjsu.edu"
                 className="w-full pl-10 p-2 border border-gray-400 rounded-md"
                 value={email}
@@ -47,12 +70,15 @@ export default function Login() {
           </div>
 
           <div>
-            <label className="block text-base font-medium mb-1">Enter Password</label>
+            <label className="block text-base font-medium mb-1">
+              Enter Password
+            </label>
             <div className="relative mb-1">
               <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <LockClosedIcon className="h-5 w-5 text-blue-700"></LockClosedIcon>
               </span>
-              <input type="password"
+              <input
+                type="password"
                 placeholder="••••••••"
                 className="w-full pl-10 p-2 border border-gray-400 rounded-md"
                 value={password}
@@ -61,15 +87,22 @@ export default function Login() {
             </div>
           </div>
 
-          <button type="submit" 
-            className="w-full mt-3 p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-semibold">Login</button>
-          
+          <button
+            type="submit"
+            className="w-full mt-3 p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-semibold"
+          >
+            Login
+          </button>
+
           <div className="flex justify-center my-4">
             <span className="px-2 text-black">--OR--</span>
           </div>
 
-          <p className="text-center mt-4">Don't have an account?{" "}
-            <a href="/signup" className="text-blue-600 underline">Sign up here</a>
+          <p className="text-center mt-4">
+            Don't have an account?{" "}
+            <a href="/signup" className="text-blue-600 underline">
+              Sign up here
+            </a>
           </p>
 
           {/* <button type="button"
@@ -79,5 +112,5 @@ export default function Login() {
         </form>
       </div>
     </div>
-  )
+  );
 }
