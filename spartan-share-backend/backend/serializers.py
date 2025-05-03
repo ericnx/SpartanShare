@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import User, Project, ProjectApplication
+# from django.contrib.auth.models import User
 
 '''
 - converts the model instances to JSON (send data to frontend)
@@ -9,7 +10,12 @@ from .models import User, Project, ProjectApplication
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = '__all__'
+        fields = ['email', 'password', 'display_name']
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        return User.objects.create_user(**validated_data)
+
 
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
