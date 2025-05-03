@@ -1,6 +1,6 @@
-from rest_framework import viewsets, generics
+from rest_framework import viewsets, generics, status
 from rest_framework.views import APIView
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -30,6 +30,24 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(creator=self.request.user)
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+    
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def toggle_save(self, request, pk=None):
+        project = self.get_object()
+        user = request.user
+
+        if project in user.saved_projects.all():
+            user.saved_projects.remove(project)
+        else:
+            user.saved_projects.add(project)
+
+        serializer = ProjectSerializer(project, context={'request': request})
+        return Response(serializer.data)
 
 class MyProjectsView(generics.ListAPIView):
     serializer_class = ProjectSerializer
@@ -69,3 +87,25 @@ class LoginView(APIView):
             })
         else:
             return Response({"detail": "Invalid credentials"}, status=400)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_saved_projects(request):
+    projects = request.user.saved_projects.all()
+    serializer = ProjectSerializer(projects, many=True, context={'request': request})
+    return Response(serializer.data)
+
+# @api_view(["POST"])
+# @permission_classes([IsAuthenticated])
+# def toggle_save_project(request, project_id):
+#     user = request.user
+#     try:
+#         project = Project.objects.get(id=project_id)
+#         if project in user.saved_projects.all():
+#             user.saved_projects.remove(project)
+#             return Response({'status': 'unsaved'})
+#         else:
+#             user.saved_projects.add(project)
+#             return Response({'status': 'saved'})
+#     except Project.DoesNotExist:
+#         return Response({'error': 'Project not found'}, status=status.HTTP_404_NOT_FOUND)

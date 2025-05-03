@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 
 # Create your models here.
@@ -37,6 +38,7 @@ class User(AbstractUser):
     choices=[('Undergrad', 'Undergrad'), ('Graduate', 'Graduate')],
     blank=True
   )
+  saved_projects = models.ManyToManyField('Project', related_name='saved_by', blank=True)
   # profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
 
   USERNAME_FIELD = 'email'
@@ -45,6 +47,8 @@ class User(AbstractUser):
   # def __str__(self):
   #   return self.email
   objects = UserManager()
+
+User = get_user_model()
   
 class Project(models.Model):
   title = models.CharField(max_length=255)
@@ -57,7 +61,7 @@ class Project(models.Model):
   skills = models.JSONField(default=list)
   majors = models.JSONField(default=list)
   graduate_levels = models.JSONField(default=list)
-  saved_by = models.ManyToManyField(User, related_name='saved_projects', blank=True)
+  # saved_by = models.ManyToManyField('User', related_name='saved_projects_set', blank=True)
 
   def __str__(self):
     return self.title

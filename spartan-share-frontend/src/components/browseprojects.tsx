@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { HeartIcon } from "@heroicons/react/24/solid";
+import { useRouter } from "next/router";
 
 // const dummyProjects = [
 //   {
@@ -49,6 +50,7 @@ type Project = {
   skills: string[];
   majors: string[];
   graduate_levels: string[];
+  favorited: boolean;
 }
 
 export default function BrowseProjects() {
@@ -58,13 +60,59 @@ export default function BrowseProjects() {
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const modalRef = useRef(null);
+  const router = useRouter();
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/projects/")
-      .then((res) => res.json())
+    const token = localStorage.getItem("access");
+
+    fetch("http://127.0.0.1:8000/api/projects/", {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          // token invalid → log out and redirect
+          const errJson = await res.json();
+          if (errJson.code === "token_not_valid") {
+            alert("Session expired. Please log in again.");
+            localStorage.removeItem("access");
+            localStorage.removeItem("refresh");
+            router.push("/login");
+          }
+          throw new Error("Bad response");
+        }
+        return res.json();
+      })
       .then((data) => setProjects(data))
       .catch((err) => console.error("Failed to fetch projects", err));
   }, []);
+
+
+  const handleToggleFavorite = async (projectId: number) => {
+    const token = localStorage.getItem("access");
+    if (!token) {
+      alert("Please log in to favorite projects.");
+      router.push("/login");
+      return;
+    }
+
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/api/projects/${projectId}/toggle_save/`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        const updated = await res.json();
+        setProjects((prev) =>
+          prev.map((p) => (p.id === projectId ? updated : p))
+        );
+      }
+    } catch (err) {
+      console.error("Error toggling favorite:", err);
+    }
+  };
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -123,7 +171,7 @@ export default function BrowseProjects() {
           {projects.map((project) => (
             <div key={project.id}
               onClick={() => setSelectedProject(project)}
-              className="w-64 border  border-black shadow-sm cursor-pointer hover:shadow-lg">
+              className="w-64 border  border-black shadow-sm cursor-pointer hover:shadow-lg flex flex-col">
               <div className="bg-sky-200 px-2 py-1 border-b border-black text-center font-bold">
                 {project.title}
               </div>
@@ -149,6 +197,15 @@ export default function BrowseProjects() {
               {/* <div className="flex justify-end px-3 pb-3">
                 <HeartIcon className={`h-5 w-5 cursor-pointer ${project.favorited ? "text-red-500" : "text-gray-400"}`}></HeartIcon>
               </div> */}
+              <div className="mt-auto flex justify-end px-3 pb-3">
+                <HeartIcon
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToggleFavorite(project.id);
+                  }}
+                  className={`h-5 w-5 cursor-pointer ${project.favorited ? "text-red-500" : "text-gray-400"}`}
+                />
+              </div>
             </div>
 
           ))}
