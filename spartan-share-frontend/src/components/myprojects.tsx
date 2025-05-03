@@ -36,6 +36,8 @@ export default function MyProjects() {
   const [showModal, setShowModal] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingProjectId, setEditingProjectId] = useState<number | null>(null);
   const createModalRef = useRef(null);
   const viewModalRef = useRef(null);
   const router = useRouter();
@@ -67,9 +69,41 @@ export default function MyProjects() {
       graduate_levels_wanted: [graduateLevel],
     };
 
+  //   try {
+  //     const res = await fetch("http://127.0.0.1:8000/api/projects/", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //       body: JSON.stringify(body),
+  //     });
+
+  //     if (res.ok) {
+  //       const newProject = await res.json();
+  //       setProjects(prev => [...prev, newProject]);
+  //       setShowModal(false);
+  //       resetForm();
+  //     } else {
+  //       const err = await res.json();
+  //       console.error("Failed to create project:", err);
+  //       alert("Failed to create project.");
+  //     }
+  //   } catch (err) {
+  //     console.error("Error:", err);
+  //     alert("Something went wrong.");
+  //   }
+  // };
+
+    const url = editingProjectId
+      ? `http://127.0.0.1:8000/api/projects/${editingProjectId}/`
+      : "http://127.0.0.1:8000/api/projects/";
+
+    const method = editingProjectId ? "PATCH" : "POST";
+
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/projects/", {
-        method: "POST",
+      const res = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
@@ -78,18 +112,52 @@ export default function MyProjects() {
       });
 
       if (res.ok) {
-        const newProject = await res.json();
-        setProjects(prev => [...prev, newProject]);
-        setShowModal(false);
+        const updatedProject = await res.json();
+
+        if (editingProjectId) {
+          setProjects(prev =>
+            prev.map(p => (p.id === editingProjectId ? updatedProject : p))
+          );
+          setIsEditing(false);
+          setEditingProjectId(null);
+        } else {
+          setProjects(prev => [...prev, updatedProject]);
+        }
+
         resetForm();
+        setShowModal(false);
       } else {
         const err = await res.json();
-        console.error("Failed to create project:", err);
-        alert("Failed to create project.");
+        console.error("Failed to save project:", err);
+        alert("Failed to save project.");
       }
     } catch (err) {
       console.error("Error:", err);
       alert("Something went wrong.");
+    }
+  };
+
+  const handleDelete = async (e: React.MouseEvent, projectId: number) => {
+    e.stopPropagation();
+    const token = localStorage.getItem("access");
+    if (!token) return;
+
+    if (!confirm("Are you sure you want to delete this project?")) return;
+
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/api/projects/${projectId}/`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.ok) {
+        setProjects(prev => prev.filter(p => p.id !== projectId));
+      } else {
+        alert("Failed to delete project.");
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
+      alert("Error deleting project.");
     }
   };
 
@@ -189,7 +257,7 @@ export default function MyProjects() {
         {projects.map((project) => (
           <div key={project.id}
           onClick={() => setSelectedProject(project)}
-            className="w-64 border border-black shadow-sm cursor-pointer hover:shadow-lg">
+            className="w-64 flex flex-col justify-between border border-black shadow-sm cursor-pointer hover:shadow-lg">
             <div className="bg-sky-200 px-2 py-1 border-b border-black text-center font-bold">
               {project.title}
             </div>
@@ -215,8 +283,25 @@ export default function MyProjects() {
             </div>
 
             <div className="flex justify-between px-3 pb-3">
-              <button className="text-blue-600 font-semibold hover:underline">Edit</button>
-              <button className="text-red-600 font-semibold hover:underline">Delete Project</button>
+              <button
+                className="text-blue-600 font-semibold hover:underline"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setTitle(project.title);
+                  setDescription(project.description);
+                  setStartDate(project.start_date);
+                  setEndDate(project.end_date);
+                  setSkills(project.skills.join(", "));
+                  setMajors(project.majors.join(", "));
+                  setGraduateLevel(project.graduate_levels[0] || "");
+                  setEditingProjectId(project.id);
+                  setIsEditing(true);
+                  setShowModal(true);
+                }}
+              >Edit</button>
+              <button
+                className="text-red-600 font-semibold hover:underline"
+                onClick={(e) => handleDelete(e, project.id)}>Delete Project</button>
             </div>
           </div>
         ))}
@@ -240,6 +325,7 @@ export default function MyProjects() {
             <div className="flex justify-between">
               <label className="w-1/4 font-semibold">Enter Description:</label>
               <textarea placeholder="Description"
+                value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="w-3/4 border border-black rounded px-2 py-1 h-24"></textarea>
             </div>

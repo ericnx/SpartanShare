@@ -123,7 +123,7 @@ export default function BrowseProjects() {
           {projects.map((project) => (
             <div key={project.id}
               onClick={() => setSelectedProject(project)}
-              className="w-64 border border-black shadow-sm cursor-pointer hover:shadow-lg">
+              className="w-64 border  border-black shadow-sm cursor-pointer hover:shadow-lg">
               <div className="bg-sky-200 px-2 py-1 border-b border-black text-center font-bold">
                 {project.title}
               </div>
