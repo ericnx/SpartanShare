@@ -122,19 +122,28 @@ export default function MyProjects() {
       router.push("/login");
     }
 
-    fetch("http://127.0.0.1:8000/api/projects/", {
+    fetch("http://127.0.0.1:8000/api/my-projects/", {
       headers: {
+        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
     })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("Projects fetch response:", data);
+      .then(async (res) => {
+        if (!res.ok) {
+          if (res.status === 401) {
+            alert("Session expired. Please log in again.");
+            localStorage.removeItem("access");
+            localStorage.removeItem("refresh");
+            router.push("/login");
+          }
+          throw new Error("Failed to fetch user projects.");
+        }
+        const data = await res.json();
         if (Array.isArray(data)) {
           setProjects(data);
         } else {
           console.error("Expected array but got:", data);
-          setProjects([]);  // fallback to empty
+          setProjects([]);
         }
       })
       .catch((err) => {
