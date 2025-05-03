@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
@@ -15,7 +16,7 @@ class LoginView(APIView):
         user = authenticate(request, email=email, password=password)
 
         if user is not None:
-            token, created = Token.objects.get_or_create(user=user)
+            token, _ = Token.objects.get_or_create(user=user)
 
             response_data = {
                 "message": "Login successful",
@@ -40,15 +41,26 @@ class SignupView(APIView):
 
 
 class ProfileView(APIView):
-    def update_biography(request):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
         user = request.user
-        bio = request.data.get('biography')
+        bio = request.data.get("biography", "")
 
         if bio is not None:
             user.biography = bio
             user.save()
             return Response({'message': 'Biography updated successfully'})
         return Response({'error': 'No biography provided'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    def get(self, request):
+        user = request.user
+        return Response({
+            "display_name": user.display_name,
+            "email": user.email,
+            "biography": user.biography
+        })
 
 class ProjectViewSet(viewsets.ModelViewSet):
     queryset = Project.objects.all()

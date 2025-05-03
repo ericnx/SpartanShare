@@ -7,37 +7,39 @@ export default function Profile() {
     email: string;
   } | null>(null);
 
+  const storedUser = localStorage.getItem("user");
+  const userData = JSON.parse(storedUser);
+
   useEffect(() => {
-    const userStr = localStorage.getItem("user");
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      const userData = JSON.parse(storedUser);
+      const token = userData.user.token;
 
-    if (userStr) {
-      try {
-        const userData = JSON.parse(userStr);
-        console.log("Parsed data from localStorage:", userData);
-
-        if (userData && userData.user) {
-          const user = userData.user; // user object
-          setUser(user);
-          setBio(user.biography || "");
-        } else {
-          console.error("User data is missing the 'user' object.");
-        }
-      } catch (error) {
-        console.error("Error parsing user data from localStorage:", error);
+      if (token) {
+        fetch("http://localhost:8000/profile/details/", {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            setUser({ ...data, token }); // add token back so handleSave still works
+            setBio(data.biography || "");
+          })
+          .catch((err) => console.error("Failed to fetch profile:", err));
       }
     }
   }, []);
 
   const handleSave = async () => {
-    const storedUser = localStorage.getItem("user");
-    const token = storedUser ? JSON.parse(storedUser).token : null;
-
+    console.log("token ", userData.user.token);
     try {
-      const res = await fetch("http://localhost:8000/update-biography/", {
+      const res = await fetch("http://localhost:8000/profile/update/", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Token ${userData.user.token}`,
         },
         body: JSON.stringify({ biography: bio }),
       });

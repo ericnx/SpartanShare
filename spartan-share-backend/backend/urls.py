@@ -28,10 +28,8 @@ router.register(r'projects', ProjectViewSet)
 router.register(r'applications', ProjectApplicationViewSet)
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
     path('login/', LoginView.as_view(), name='login'),
-    path('', lambda request: redirect('login')),
-    path('api/', include(router.urls)),
     path("signup/", SignupView.as_view(), name="signup"),
-    path("update-biography/", ProfileView.as_view(), name="update-biography")
+    path("profile/update/", ProfileView.as_view(), name="profile-update"),
+    path("profile/details/", ProfileView.as_view(), name="profile-details"),
 ]
