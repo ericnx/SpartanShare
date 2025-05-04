@@ -48,6 +48,19 @@ class ProjectViewSet(viewsets.ModelViewSet):
 
         serializer = ProjectSerializer(project, context={'request': request})
         return Response(serializer.data)
+    
+    @action(detail=True, methods=['get'], permission_classes=[IsAuthenticated])
+    def view_applicants(self, request, pk=None):
+        project = self.get_object()
+
+        if project.creator != request.user:
+            return Response({'detail': 'Not authorized to view applicants'}, status=403)
+        
+        applications = Application.objects.filter(project=project).select_related('user')
+        applicants = [app.user for app in applications]
+
+        serializer = UserSerializer(applicants, many=True)
+        return Response(serializer.data)
 
 class MyProjectsView(generics.ListAPIView):
     serializer_class = ProjectSerializer
@@ -55,6 +68,13 @@ class MyProjectsView(generics.ListAPIView):
 
     def get_queryset(self):
         return Project.objects.filter(creator=self.request.user)
+    
+class AppliedProjectsView(generics.ListAPIView):
+    serializer_class = ProjectSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Project.objects.filter(applications__user=self.request.user).distinct()
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
