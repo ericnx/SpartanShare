@@ -76,7 +76,9 @@ export default function Profile() {
 
   return (
     <div className="max-w-6xl mx-auto">
-      <h2 className="text-6xl font-bold text-blue-700 mb-3 text-center">Edit Profile</h2>
+      <h2 className="text-6xl font-bold text-blue-700 mb-3 text-center">
+        Edit Profile
+      </h2>
       <hr className="mb-6 border border-blue-200"></hr>
 
       <div className="mb-4">
@@ -135,7 +137,6 @@ export default function Profile() {
           onClick={handleSave}
           className="px-6 py-2 bg-blue-600 text-white font-semibold rounded hover:bg-blue-700 shadow">Save Changes</button>
       </div>
-
     </div>
   );
 }
