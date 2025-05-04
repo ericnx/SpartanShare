@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="archives">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/django/tests/utils_tests/archives/foobar.zip!/" />
+      <root url="jar://$PROJECT_DIR$/django/tests/utils_tests/archives/leadpath_foobar.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
