@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="traversal_disk_win">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/django/tests/utils_tests/traversal_archives/traversal_disk_win.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

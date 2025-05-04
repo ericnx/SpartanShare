@@ -9,28 +9,26 @@ export default function Login() {
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const res = await fetch("http://localhost:8000/login/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await res.json();
-      console.log(data)
-
-      if (res.ok) {
-        localStorage.setItem("user", JSON.stringify(data));
-        alert("Login successful");
-        router.push("/home");
-      } else {
-        alert("Login failed: " + JSON.stringify(data));
-      }
-    } catch (error) {
-      console.log("Login error:", error);
+  
+    const res = await fetch("http://127.0.0.1:8000/api/token/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+  
+    const data = await res.json();
+  
+    if (res.ok) {
+      localStorage.setItem("access", data.access);
+      localStorage.setItem("refresh", data.refresh);
+      alert("Login successful!");
+      // Optionally navigate to dashboard or home
+      router.push("/home");
+    } else {
+      alert("Login failed");
+      console.error("Login error:", data);
     }
   };
 
@@ -38,11 +36,29 @@ export default function Login() {
     router.push("/signup");
   };
 
+  // const login = async () => {
+  //   const res = await fetch('http://127.0.0.1:8000/api/token/', {
+  //     method: 'POST',
+  //     headers: { 'Content-Type': 'application/json' },
+  //     body: JSON.stringify({ email, password }),
+  //   });
+
+  //   const data = await res.json();
+  //   if (res.ok) {
+  //     localStorage.setItem('access', data.access);
+  //     localStorage.setItem('refresh', data.refresh);
+  //     alert('Login successful!');
+  //   } else {
+  //     alert('Login failed');
+  //     console.error(data);
+  //   }
+  // };
+
   return (
     <div className="flex h-screen bg-sky-200">
       {/* Please input our logo over here */}
       <div className="w-2/3 flex items-center justify-center">
-        <img src="/logo.jpg" alt="Logo" className="w-500 h-500" />
+        <img src="/logo1.png" alt="Logo" />
       </div>
 
       <div className="w-px h-full bg-gray-600"></div>

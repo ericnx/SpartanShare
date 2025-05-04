@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useRouter } from 'next/router';
 import Link from "next/link";
 import Profile from "../components/profile";
 import MyProjects from "../components/myprojects";
@@ -8,6 +9,7 @@ import Applications from "../components/applications";
 
 export default function Home() {
   const [selected, setSelected] = useState("projects");
+  const router = useRouter();
 
   const renderContent = () => {
     switch (selected) {
@@ -26,6 +28,12 @@ export default function Home() {
     }
   };
 
+  const logout = () => {
+    localStorage.removeItem('access');
+    localStorage.removeItem('refresh');
+    router.push('/login');
+  };
+
   return (
     <div className="flex h-screen">
       
@@ -33,7 +41,7 @@ export default function Home() {
         <div>
 
           <div className="px-6 py-8">
-            <img src="/logo.jpg" alt="Logo" className="mx-auto w-40"></img>
+            <img src="/logo2.png" alt="Logo" className="mx-auto w-40"></img>
           </div>
 
           <nav className="flex flex-col items-center gap-5 px-4">
@@ -65,12 +73,13 @@ export default function Home() {
         </div>
 
         <div>
-          <Link
+          {/* <Link
             href="/login"
             className="text-blue-600 hover:underline flex items-center gap-1"
           >
             <span className="text-xl">◀Log Out</span>
-          </Link>
+          </Link> */}
+          <button onClick={logout} className="text-blue-600 hover:underline flex items-center gap-1">◀Log Out</button>
         </div>
       </aside>
 

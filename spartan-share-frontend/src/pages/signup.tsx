@@ -13,6 +13,7 @@ export default function Signup() {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (password !== confirmPassword) {
@@ -20,40 +21,49 @@ export default function Signup() {
       return;
     }
 
+    if (!email || !password || !name) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+
     try {
-      const res = await fetch("http://localhost:8000/signup/", {
+      const res = await fetch("http://127.0.0.1:8000/api/register/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Accept":       "application/json",
         },
         body: JSON.stringify({
+          // username: email,
           display_name: name,
           email: email,
           password: password,
+          major: "",
+          level: "",
         }),
       });
 
-      const data = await res.json();
+      const payload = await res.json();  // read raw response
 
       if (res.ok) {
-        alert("user created successfully");
+        alert("Account created!");
         window.location.href = "/login";
       } else {
-        alert("signup failed: " + JSON.stringify(data));
+        console.error("Signup error:", payload);
+        alert("Signup failed: " + JSON.stringify(payload));
       }
-    } catch (error) {
-      console.log("signup error: ", error);
+    } catch (err) {
+      console.error("Signup error:", err);
+      alert("An error occurred during signup.");
     }
-
-    console.log("Name:", name);
-    console.log("Email:", email);
-    console.log("Password:", password);
   };
+
+
 
   return (
     <div className="flex h-screen bg-sky-200">
       <div className="w-2/3 flex items-center justify-center">
-        <img src="/logo.jpg" alt="Logo" className="w-500 h-500" />
+        <img src="/logo1.png" alt="Logo" />
       </div>
       <div className="w-px h-full bg-gray-600"></div>
       <div className="w-1/5 p-8 ml-auto mr-auto my-auto">

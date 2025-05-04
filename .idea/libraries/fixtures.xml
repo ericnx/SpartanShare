@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="fixtures">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/django/tests/fixtures/fixtures/fixture4.json.zip!/" />
+      <root url="jar://$PROJECT_DIR$/django/tests/fixtures/fixtures/fixture5.json.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
